@@ -17,6 +17,8 @@ from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 
 from langchain_core.messages import HumanMessage, AIMessage
 
+from config import answer_examples
+
 
 # -----------------------------
 # Chat History 저장
@@ -178,6 +180,17 @@ def get_ai_message(user_message):
     llm = get_llm()
     multi_retriever = get_retrieved_doc()
 
+    #fewshot 적용
+    example_messages = []
+
+    for example in answer_examples:
+        example_messages.append(
+            ("human", example["input"])
+        )
+        example_messages.append(
+            ("ai", example["answer"])
+        )
+
     # -----------------------------
     # 5) QA 프롬프트
     # -----------------------------
@@ -186,10 +199,11 @@ def get_ai_message(user_message):
             (
                 "system",
                 """
-    너는 통신설비 기술 질의응답 전문가다.
-    반드시 제공된 context만 근거로 답변하라.
-    답변은 한국어로, 핵심부터 간결하게 답변하고, 근거를 바탕으로 답변이 나온 이유를 추가 설명해줘.
-
+    당신은 통신설비공사 시 필요한 법적 기준, 기술기준 등을 잘 알고 있는 통신전문가입니다.
+    반드시 제공된 context만 근거로 답변하세요.
+    답변은 한국어로,근거를 바탕으로 명확하고 정확하게 답변하고, 답변이 나온 이유를 추가 설명해주세요.
+    답변할 때 반드시 규정명(regulation)과 조문(article)을 포함해서 알려주세요.
+    
     반드시 아래 형식으로만 답하라.
 
     {regulation} ,\n 답변내용
@@ -203,6 +217,7 @@ def get_ai_message(user_message):
     </context>
     """.strip(),
             ),
+            *example_messages, #fewshot 적용
             ("placeholder", "{chat_history}"),
             ("human", "{input}"),
         ]
