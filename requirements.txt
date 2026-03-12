@@ -4,6 +4,7 @@ langchain-community
 langchain-core
 langchain-openai
 langchain-pinecone
+langchain-upstage
 pinecone-client
 python-dotenv
 tiktoken
