@@ -2,9 +2,7 @@ streamlit
 langchain
 langchain-community
 langchain-core
-langchain-openai
+pinecone
 langchain-pinecone
 langchain-upstage
-pinecone-client
 python-dotenv
-tiktoken
