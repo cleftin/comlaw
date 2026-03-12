@@ -89,7 +89,7 @@ with header:
         """, unsafe_allow_html=True)
 
         st.markdown(
-            "<p style='font-size:15px; color:gray;'>ChatUpstage모델, UpstageEmbeddings임베딩모델 사용, 2026.03.11.</p>",
+            "<p style='font-size:15px; color:gray;'>ChatUpstage모델, UpstageEmbeddings임베딩모델 사용</p>",
             unsafe_allow_html=True
         ) 
       
