@@ -5,8 +5,19 @@ import time
 from llmlaw import get_ai_message
 from PIL import Image
 
+# page_config는 가능한 한 먼저 실행
+page_icon = Image.open("DY_pageicon.png")
+page_icon = page_icon.resize((30, 30))
 
+st.set_page_config(
+    page_title="통신관련 법령정보 QnA",
+    page_icon=page_icon,
+    layout="wide"
+)
 
+# -----------------------------
+# viewport 정보 가져오기
+# -----------------------------
 viewport = streamlit_js_eval(
     js_expressions="""
     ({
@@ -20,27 +31,37 @@ viewport = streamlit_js_eval(
     key="viewport"
 )
 
-screen_width = viewport["width"]
-screen_height = viewport["height"]
+# 기본값 설정
+screen_width = 1200
+screen_height = 800
 
-# print(f"viewport : {viewport}")
+# 정상값이 들어온 경우만 사용
+if isinstance(viewport, dict):
+    vw = viewport.get("width")
+    vh = viewport.get("height")
 
-# 화면 높이와 너비 초기값 설정
-if not screen_height or screen_height < 100:
-    screen_height = 800
+    if isinstance(vw, (int, float)) and vw > 100:
+        screen_width = int(vw)
+        st.session_state.screen_width = int(vw)
+    elif "screen_width" in st.session_state:
+        screen_width = st.session_state.screen_width
 
-if not screen_width:
-    screen_width = 1200
+    if isinstance(vh, (int, float)) and vh > 100:
+        screen_height = int(vh)
+        st.session_state.screen_height = int(vh)
+    elif "screen_height" in st.session_state:
+        screen_height = st.session_state.screen_height
+
+else:
+    screen_width = st.session_state.get("screen_width", 1200)
+    screen_height = st.session_state.get("screen_height", 800)
 
 # 이미지를 base64변환
 def img_to_base64(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-icon = img_to_base64("DY.png") # Header내 아이콘 Img to base64
-
-page_icon = Image.open("DY_pageicon.png")
-page_icon = page_icon.resize((30, 30))
+icon = img_to_base64("DY.png")
 
 st.markdown("""
 <style>
@@ -51,7 +72,7 @@ st.markdown("""
 
 /* 헤더와 채팅영역 사이 구분선 */
 .header-divider{
-    border-top: 2px solid #d1d5db;  /* 굵기 + 색 */
+    border-top: 2px solid #d1d5db;
     margin-top: 0px;
     margin-bottom: 0px;
 }
@@ -94,12 +115,7 @@ div[data-testid="stButton"] button {
     border-radius:10px;
 }
 
-.title-text {
-    font-size:20px;
-    margin:0;
-}
-
-/* 모바일 버튼 스타일 + 모바일 채팅영역 높이 */
+/* 모바일 */
 @media (max-width: 768px) {
     div[data-testid="stButton"] button {
         margin-top:5px;
@@ -107,23 +123,9 @@ div[data-testid="stButton"] button {
         padding:3px 8px;
         border-radius:10px;
     }
-
-    .title-text{
-        font-size:5px;
-    }
-    
-    
 }
-
 </style>
 """, unsafe_allow_html=True)
-
-#page_config 설정
-st.set_page_config(
-    page_title="통신관련 법령정보 QnA",
-    page_icon=page_icon,
-    layout="wide"
-)
 
 # -----------------------------
 # HEADER
@@ -131,52 +133,47 @@ st.set_page_config(
 header = st.container()
 
 with header:
-
-    col1, col2 = st.columns([9,1])
+    col1, col2 = st.columns([9, 1])
 
     with col1:
         st.markdown(f"""
         <div style="display:flex; align-items:center; gap:2px;">
             <img src="data:image/png;base64,{icon}" width="30">
-            <h1 style="font-size:24px; margin:0;">통신관련 법령정보 QnA</h1>            
+            <h1 style="font-size:24px; margin:0;">통신관련 법령정보 QnA</h1>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown(
             "<p style='font-size:16px; color:gray; margin-bottom:4px;'>ChatUpstage/UpstageEmbeddings 모델 적용</p>",
             unsafe_allow_html=True
-        ) 
-      
+        )
 
     with col2:
         if st.button("대화 초기화"):
             st.session_state.messages = []
             st.rerun()
 
-st.markdown('<div class="header-divider"></div>', unsafe_allow_html=True) #header영역과 chatting영역 사이 구분선 삽입
+st.markdown('<div class="header-divider"></div>', unsafe_allow_html=True)
 
 # -----------------------------
 # SESSION
 # -----------------------------
 if "messages" not in st.session_state:
-    st.session_state.messages = [] #사용자와 AI 대화 저장 리스트
+    st.session_state.messages = []
 
 # -----------------------------
 # CHAT AREA
 # -----------------------------
 st.markdown('<div class="chat-area-wrap">', unsafe_allow_html=True)
 
-if screen_width > 100 and screen_width < 768:
-    chat_height = int(screen_height * 0.40)
-    # print(f"모바일changed chat_height : {chat_height}")
+if 100 < screen_width < 768:
+    chat_height = int(screen_height * 0.45)
 elif screen_width >= 768:
-    chat_height = int(screen_height * 0.60)
-    # print(f"컴퓨터changed chat_height : {chat_height}")
+    chat_height = int(screen_height * 0.70)
 else:
     chat_height = 500
 
 chat_container = st.container(height=chat_height)
-
 
 with chat_container:
     for message in st.session_state.messages:
@@ -184,12 +181,11 @@ with chat_container:
             st.write(message["content"])
 
 st.markdown('</div>', unsafe_allow_html=True)
+
 # -----------------------------
 # INPUT
 # -----------------------------
-
 if prompt := st.chat_input("통신관련 법령정보를 검색하세요!"):
-
     st.session_state.messages.append(
         {"role": "user", "content": prompt}
     )
@@ -199,9 +195,8 @@ if prompt := st.chat_input("통신관련 법령정보를 검색하세요!"):
             st.write(prompt)
 
         with st.spinner("답변 생성중..."):
-            answer = get_ai_message(prompt) #사용자 질문에 대한 답변 요청
+            answer = get_ai_message(prompt)
 
-        # streaming 출력
         with chat_container:
             with st.chat_message("assistant"):
                 placeholder = st.empty()
