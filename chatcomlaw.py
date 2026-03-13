@@ -23,25 +23,6 @@ st.markdown("""
     margin-bottom: 0px;
 }
 
-/* 대화 초기화 버튼 */
-/* PC 기본 버튼 스타일 */
-div[data-testid="stButton"] button {
-    margin-top:5px;
-    font-size:15px;
-    padding:4px 10px;
-    border-radius:10px;
-}
-
-/* 모바일 버튼 스타일 */
-@media (max-width: 768px) {
-    div[data-testid="stButton"] button {
-        margin-top:5px;
-        font-size:14px;
-        padding:3px 8px;
-        border-radius:10px;
-    }
-}
-
 /* 채팅 영역 border 제거 */
 [data-testid="stVerticalBlockBorderWrapper"] {
     border: none !important;
@@ -71,6 +52,34 @@ div[data-testid="stButton"] button {
     border:1px solid #d1d5db !important;
     box-shadow:none !important;
 }
+
+/* PC 기본 버튼 스타일 */
+div[data-testid="stButton"] button {
+    margin-top:5px;
+    font-size:15px;
+    padding:4px 10px;
+    border-radius:10px;
+}
+
+/* 채팅영역 wrapper - PC에서 크게 */
+.chat-area-wrap [data-testid="stVerticalBlockBorderWrapper"] {
+    height: 65vh !important;
+    overflow-y: auto !important;
+}
+
+/* 모바일 버튼 스타일 + 모바일 채팅영역 높이 */
+@media (max-width: 768px) {
+    div[data-testid="stButton"] button {
+        margin-top:5px;
+        font-size:14px;
+        padding:3px 8px;
+        border-radius:10px;
+    }
+
+    .chat-area-wrap [data-testid="stVerticalBlockBorderWrapper"] {
+        height: 38vh !important;
+        overflow-y: auto !important;
+    }
 
 </style>
 """, unsafe_allow_html=True)
@@ -121,15 +130,16 @@ if "messages" not in st.session_state:
 # -----------------------------
 # CHAT AREA
 # -----------------------------
-chat_container = st.container(height=350)
+st.markdown('<div class="chat-area-wrap">', unsafe_allow_html=True)
+
+chat_container = st.container(height=600)
 
 with chat_container:
-
     for message in st.session_state.messages:
-
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
+st.markdown('</div>', unsafe_allow_html=True)
 # -----------------------------
 # INPUT
 # -----------------------------
