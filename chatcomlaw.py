@@ -1,10 +1,38 @@
 import streamlit as st
+from streamlit_js_eval import streamlit_js_eval
 import base64
 import time
 from llmlaw import get_ai_message
 from PIL import Image
 
 
+
+viewport = streamlit_js_eval(
+    js_expressions="""
+    ({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        pixelRatio: window.devicePixelRatio
+    })
+    """,
+    key="viewport"
+)
+
+screen_width = viewport["width"]
+screen_height = viewport["height"]
+
+# print(f"viewport : {viewport}")
+
+# 화면 높이와 너비 초기값 설정
+if not screen_height or screen_height < 100:
+    screen_height = 800
+
+if not screen_width:
+    screen_width = 1200
+
+# 이미지를 base64변환
 def img_to_base64(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -16,6 +44,11 @@ page_icon = page_icon.resize((30, 30))
 
 st.markdown("""
 <style>
+/* 타이틀 위 공백 제거 */
+.block-container {
+    padding-top: 0.5rem;
+}
+
 /* 헤더와 채팅영역 사이 구분선 */
 .header-divider{
     border-top: 2px solid #d1d5db;  /* 굵기 + 색 */
@@ -55,16 +88,15 @@ st.markdown("""
 
 /* PC 기본 버튼 스타일 */
 div[data-testid="stButton"] button {
-    margin-top:5px;
+    margin-top:50px;
     font-size:15px;
     padding:4px 10px;
     border-radius:10px;
 }
 
-/* 채팅영역 wrapper - PC에서 크게 */
-.chat-area-wrap [data-testid="stVerticalBlockBorderWrapper"] {
-    height: 65vh !important;
-    overflow-y: auto !important;
+.title-text {
+    font-size:20px;
+    margin:0;
 }
 
 /* 모바일 버튼 스타일 + 모바일 채팅영역 높이 */
@@ -76,10 +108,12 @@ div[data-testid="stButton"] button {
         border-radius:10px;
     }
 
-    .chat-area-wrap [data-testid="stVerticalBlockBorderWrapper"] {
-        height: 38vh !important;
-        overflow-y: auto !important;
+    .title-text{
+        font-size:5px;
     }
+    
+    
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -102,14 +136,14 @@ with header:
 
     with col1:
         st.markdown(f"""
-        <div style="display:flex; align-items:center; gap:5px;">
-            <img src="data:image/png;base64,{icon}" width="45">
-            <h1 style="font-size:30px; margin:0;">통신관련 법령정보 QnA</h1>
+        <div style="display:flex; align-items:center; gap:2px;">
+            <img src="data:image/png;base64,{icon}" width="30">
+            <h1 style="font-size:24px; margin:0;">통신관련 법령정보 QnA</h1>            
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown(
-            "<p style='font-size:15px; color:gray; margin-bottom:4px;'>ChatUpstage모델, UpstageEmbeddings임베딩모델 사용</p>",
+            "<p style='font-size:16px; color:gray; margin-bottom:4px;'>ChatUpstage/UpstageEmbeddings 모델 적용</p>",
             unsafe_allow_html=True
         ) 
       
@@ -132,7 +166,17 @@ if "messages" not in st.session_state:
 # -----------------------------
 st.markdown('<div class="chat-area-wrap">', unsafe_allow_html=True)
 
-chat_container = st.container(height=600)
+if screen_width > 100 and screen_width < 768:
+    chat_height = int(screen_height * 0.40)
+    # print(f"모바일changed chat_height : {chat_height}")
+elif screen_width >= 768:
+    chat_height = int(screen_height * 0.60)
+    # print(f"컴퓨터changed chat_height : {chat_height}")
+else:
+    chat_height = 500
+
+chat_container = st.container(height=chat_height)
+
 
 with chat_container:
     for message in st.session_state.messages:
@@ -143,7 +187,6 @@ st.markdown('</div>', unsafe_allow_html=True)
 # -----------------------------
 # INPUT
 # -----------------------------
-# print("printing",st.session_state.messages)
 
 if prompt := st.chat_input("통신관련 법령정보를 검색하세요!"):
 
