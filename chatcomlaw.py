@@ -25,7 +25,7 @@ st.markdown("""
 
 /* 대화 초기화 버튼 */
 div[data-testid="stButton"] button {
-    margin-top:60px;
+    margin-top:5px;
     font-size:15px;
     padding:4px 10px;
     border-radius:10px;
@@ -89,7 +89,7 @@ with header:
         """, unsafe_allow_html=True)
 
         st.markdown(
-            "<p style='font-size:15px; color:gray;'>ChatUpstage모델, UpstageEmbeddings임베딩모델 사용</p>",
+            "<p style='font-size:15px; color:gray; margin-bottom:4px;'>ChatUpstage모델, UpstageEmbeddings임베딩모델 사용</p>",
             unsafe_allow_html=True
         ) 
       
