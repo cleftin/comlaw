@@ -24,11 +24,22 @@ st.markdown("""
 }
 
 /* 대화 초기화 버튼 */
+/* PC 기본 버튼 스타일 */
 div[data-testid="stButton"] button {
     margin-top:5px;
     font-size:15px;
     padding:4px 10px;
     border-radius:10px;
+}
+
+/* 모바일 버튼 스타일 */
+@media (max-width: 768px) {
+    div[data-testid="stButton"] button {
+        margin-top:5px;
+        font-size:14px;
+        padding:3px 8px;
+        border-radius:10px;
+    }
 }
 
 /* 채팅 영역 border 제거 */
